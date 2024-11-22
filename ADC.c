@@ -9,6 +9,7 @@
 #include "xc.h"
 #include "ADC.h"
 #include "clkChange.h"
+#include "light_control.h"
 
 void init_ADC() {
     TRISAbits.TRISA3 = 1;
@@ -34,7 +35,6 @@ void init_ADC() {
 
 uint16_t do_ADC(void) {
     uint16_t ADCvalue;
-    init_ADC();
 
     AD1CON1bits.SAMP = 1;
     
@@ -83,59 +83,67 @@ void IOinit() {
     IPC4bits.CNIP = 6;
     IFS1bits.CNIF = 0;
     IEC1bits.CNIE = 1;
-    
-    /* Let's set up our UART */    
-    InitUART2();
-    
+        
     TMR3 = 0;
-    PR3 = 980;
+    PR3 = 98; // 100ms
     T3CONbits.TON = 1;
     
-}
-
-void sendMode0(uint16_t result) {
-    char bar[34] = "*";
-
-    int num = 32 * ((double) result / 0x3ff);
-    int i = 0;
-    for (i = 1; i < num + 1; i++) {
-        bar[i] = '*';
-    }
-    bar[i] = ' \0';
-
-    Disp2String("\033[2J"); // Clears the terminal
-    Disp2String("\033[H"); // Sets cursor to top left of terminal
-    Disp2String("Mode 0: ");
-    Disp2String(bar);
-    Disp2Hex(result);
-}
-    
-void sendMode1 (uint16_t result) {
-    Disp2Hex(result);
+}   
+void sendADCReading (uint16_t reading) {
+    Disp2Hex(reading);
     Disp2String("\r\n");
 }
 
 
 void IOcheck() {
-    
-    if (tmr3_event) { // Clock interrupt to run once a second
-        tmr3_event = 0;
+    // state machine
+    while (isOFF) {
+        if (PB1_click) {
+            PB1_click = 0;
+            setON();
+            setLED();
 
-        uint16_t result = do_ADC();
-        
-        if (mode == 0) {
-            // Mode 0 State
-            sendMode0(result);
-        } else {
-            // Mode 1 State
-            sendMode1(result);
         }
+        else if (PB2_click) {
+            toggleBLINK();
+        }
+        
+        Idle();
     }
+    while (isON) {
+        if (PB1_click) {
+            PB1_click = 0;
+            setOFF();
+            clearBLINK();
+            clearTRANSMIT();
+            clearLED();
+            break;
+        }
+        else if (PB2_click) {
+            toggleBLINK();
+        } else if (PB3_click) {
+            toggleTRANSMIT();
+        }
 
-    if (PB1_event) {
-        mode ^= 1;
-        PB1_event = 0;
+
+        if (timerEvent) {
+            if (isBLINK && tmr3_event == 5) {
+                tmr3_event = 0;
+                toggleLED();
+            }
+            if (isTRANSMIT) {
+                timeOld = tmr3_event;
+                uint16_t reading = do_ADC();
+                sendADCReading(isLED ? reading : 0);
+            }
+        }
+
+        if (isLED) {
+            // TODO: set LED brightness based on ADC reading
+            LED_BIT = 1;
+        } else {
+            LED_BIT = 0;
+        }
+        Idle();
     }
-    Idle();
-
 }

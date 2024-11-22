@@ -54,16 +54,23 @@
 #include "clkChange.h"
 #include "UART2.h"
 #include "ADC.h"
+#include "light_control.h"
 
 
 // global flags
-uint8_t PB1_event = 0;
+uint8_t PB1_click = 0;
+uint8_t PB2_click = 0;
+uint8_t PB3_click = 0;
+
 uint8_t tmr3_event = 0;
 uint8_t mode = 0;
+uint8_t timeOld = 0;
 
 int main(void) {
     IOinit();
-    
+    InitUART2();
+    init_ADC();
+
     while(1) {        
         IOcheck();
     }
@@ -76,12 +83,33 @@ void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
     IFS0bits.T3IF = 0;
     
     TMR3 = 0; // reset timer
-    tmr3_event = 1;
+    tmr3_event += 1;
 }
 
-void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
-    //Don't forget to clear the CN interrupt flag!
-    IFS1bits.CNIF = 0;
+uint8_t button_state = 0;
+#define PB1_state   (1 << 0)  // 0b001
+#define PB2_state   (1 << 1)  // 0b010 
+#define PB3_state   (1 << 2)  // 0b100
 
-    PB1_event = !PB1;
+void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
+    IFS1bits.CNIF = 0;
+    // Only set PB1_click if the button is clicked then released
+    if (PB1 == 0 && (button_state & PB1_state) == 0) {
+        button_state |= PB1_state;
+    } else if (PB1 == 1 && (button_state & PB1_state) != 0) {
+        button_state &= ~PB1_state;
+        PB1_click = 1;
+    }
+    if (PB2 == 0 && (button_state & PB2_state) == 0) {
+        button_state |= PB2_state;
+    } else if (PB2 == 1 && (button_state & PB2_state) != 0) {
+        button_state &= ~PB2_state;
+        PB2_click = 1;
+    }
+    if (PB3 == 0 && (button_state & PB3_state) == 0) {
+        button_state |= PB3_state;
+    } else if (PB3 == 1 && (button_state & PB3_state) != 0) {
+        button_state &= ~PB3_state;
+        PB3_click = 1;
+    }
 }
