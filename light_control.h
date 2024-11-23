@@ -9,15 +9,19 @@
 #include <xc.h> 
 #include "UART2.h"
 
+void handlePWM();
+
 extern uint8_t PB1_click;
 extern uint8_t PB2_click;
 extern uint8_t PB3_click;
+extern uint8_t tmr2_event;
 extern uint8_t tmr3_event;
 extern uint8_t timeOld;
 
 #define PB1 PORTAbits.RA2
-#define PB2 PORTAbits.RA2
-#define PB3 PORTAbits.RA2
+#define PB2 PORTAbits.RA4
+#define PB3 PORTBbits.RB4
+
 #define LED_BIT LATBbits.LATB8
 
 extern uint8_t mode;
@@ -40,7 +44,6 @@ extern uint8_t mode;
 // State control macros
 #define setON()        (mode |= ON)
 #define setOFF()       (mode &= ~ON)
-#define toggleON()     (mode ^= ON)
 
 #define setBLINK()     (mode |= BLINK)
 #define clearBLINK()   (mode &= ~BLINK)

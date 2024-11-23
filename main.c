@@ -62,6 +62,7 @@ uint8_t PB1_click = 0;
 uint8_t PB2_click = 0;
 uint8_t PB3_click = 0;
 
+uint8_t tmr2_event = 0;
 uint8_t tmr3_event = 0;
 uint8_t mode = 0;
 uint8_t timeOld = 0;
@@ -77,6 +78,13 @@ int main(void) {
     return 0;
 }
 
+// Timer 2 interrupt subroutine
+void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void){
+    IFS0bits.T2IF = 0;
+    tmr2_event = 1;
+    // T2CONbits.TON = 0; // disable timer
+
+}
 
 void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
     //Don't forget to clear the timer 3 interrupt flag!
@@ -93,7 +101,6 @@ uint8_t button_state = 0;
 
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
     IFS1bits.CNIF = 0;
-    // Only set PB1_click if the button is clicked then released
     if (PB1 == 0 && (button_state & PB1_state) == 0) {
         button_state |= PB1_state;
     } else if (PB1 == 1 && (button_state & PB1_state) != 0) {
