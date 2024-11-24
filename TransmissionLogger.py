@@ -1,3 +1,7 @@
+# TransmissionLogger.py
+# Isabelle Gaudet/Group 4
+# 2024-11-23
+
 import serial 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,7 +10,8 @@ from datetime import datetime
 
 # function to log data
 def data_logging():
-    ser = serial.Serial(#uart port, baudrate, timeout=1)
+    ser = serial.Serial(#uart port, baudrate, 
+                        timeout=1)
     # create empty list to store
     data = []
     
@@ -30,7 +35,7 @@ def data_logging():
     ser.close()
         
     # creating dataframe 
-    df=pd.DataFrame(data, columns='Timestamp', 'Intensity','ADC'])
+    df=pd.DataFrame(data, columns=['Timestamp', 'Intensity','ADC'])
 
     # "The generated CSV file should be named as per your group name and have proper index numbers and column names."
     # save data to csv file
@@ -77,4 +82,5 @@ def data_plotting(df):
     # displaying
     plt.show()
 
-
+if __name__ == '__main__':
+    data_logging()
