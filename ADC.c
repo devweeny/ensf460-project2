@@ -46,7 +46,14 @@ uint16_t do_ADC(void) {
     return (ADCvalue);
 }
 
-void sendADCReading(uint16_t reading) {
+void sendADCReading(uint16_t reading, uint8_t LED_ON) {
     Disp2Hex(reading);
+    Disp2String(",");
+    if (LED_ON) {
+        Disp2Dec(reading / 1023.0 * 100);
+    }
+    else {
+        Disp2Dec(0);
+    }
     Disp2String("\r\n");
 }

@@ -8,6 +8,9 @@
 
 #include "xc.h"
 #include "IOs.h"
+#include "ADC.h"
+#include "UART2.h"
+#include "clkChange.h"
 
 void IOinit() {
 
@@ -60,7 +63,7 @@ void IOinit() {
 void handlePWM() {
 
   uint16_t reading = do_ADC();
-  float intensity = (float)do_ADC() / 1024.0;
+  float intensity = (float)do_ADC() / 1023.0;
 
   // PR2 = 500 gives a period of 1ms
   if (ledPulse) {
@@ -106,7 +109,7 @@ int IOcheck() {
       timeOld = tmr3_event;
       PB1_click = 0;
       PB3_click = 0;
-      mode = ON_BLINK;
+      mode = ON;
       isLED = 1;
       return 1;
     }
@@ -198,11 +201,7 @@ int IOcheck() {
       return 1;
     }
     if (timerEvent && tmr3_event % 3 == 0) {
-      uint16_t reading = 0;
-      if (isLED) {
-        reading = do_ADC();
-      }
-      sendADCReading(reading);
+      sendADCReading(do_ADC(), isLED);
     }
     isLED = 1;
     timeOld = tmr3_event;
@@ -237,11 +236,7 @@ int IOcheck() {
         isLED = !isLED;
       }
       if (tmr3_event % 3 == 0) {
-        uint16_t reading = 0;
-        if (isLED) {
-          reading = do_ADC();
-        }
-        sendADCReading(reading);
+        sendADCReading(do_ADC(), isLED);
       }
     }
     timeOld = tmr3_event;

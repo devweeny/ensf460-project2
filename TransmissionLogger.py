@@ -6,27 +6,39 @@ import serial
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
-from datetime import datetime
+from datetime import date, datetime
 
 # function to log data
 def data_logging():
-    ser = serial.Serial(#uart port, baudrate, 
-                        timeout=1)
+    ser = serial.Serial("COM3", 9600, timeout=1)
     # create empty list to store
     data = []
     
     #start=current time
     start_time = time.time()
+    start_millisecond = time.time()*1000.0
+
+    # Burn one line
+    ser.readline()
+
     # while loop -read data for 60 seconds
     while time.time()-start_time<60:
-        line = ser.readline().decode('utf-8').strip()
+        read = ser.readline().decode('utf-8').split(",")
+        # print(read)
+        # exit(0)
+        hex = read[0].split()[1]
+        intensity = int(read[1].split()[1])
         # if data read..
-        if line:
+        if hex:
+            adc = int(hex, 16)  # convert hex to int
+            # intensity = adc/1023*100
+
             
             # timestamp=current date/time
-            timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            timestamp = (time.time()*1000.0-start_millisecond)/1000.0
             # intensity,adc value=split data
-            intensity,adc=map(int,line.split(','))
+            
             # append line data to data list
             data.append([timestamp,intensity,adc])
             
@@ -47,40 +59,31 @@ def data_logging():
 
 # function to plot data
 def data_plotting(df):
+    # create figure with 2 subplots side by side
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
     
-# intensity levels (%) vs. time (s)
-# ADC reading vs, time
-# subplots
-
-    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-    df.set_index('Timestamp', inplace=True)
-    
-    # create figure and axis objects with subplots
-    fig,ax1=plt.subplots()
-    
-    # time on x axis
+    # First subplot - Intensity vs Time
     ax1.set_xlabel('Time (s)')
-    # intensity on y axis
-    ax1.set_ylabel('Intensity Level (%)', color='b')
-    # plotting intensity vs. time
-    ax1.plot(df.index, df['Intensity'], color='b')
-    # setting y-axis label color - not required
-    ax1.tick_params(axis='y', labelcolor='b')
+    ax1.set_ylabel('Intensity Level (%)')
+    ax1.plot(df['Timestamp'], df['Intensity'], color='b')
+    ax1.set_title('Intensity Level vs Time')
+    ax1.set_ylim(0, 100)  # Set y-axis limits for intensity
+    ax1.grid(True)
     
-    # create second set of y axes against the same x axis (time)
-    ax2=ax1.twinx()
-    # now ADC reading on y axis
-    ax2.set_ylabel('ADC Reading', color='r')
-    # plotting ADC reading vs. time
-    ax2.plot(df.index, df['ADC'], color='r')
-    # setting y-axis label color - not required again
-    ax2.tick_params(axis='y', labelcolor='r')
+    # Second subplot - ADC vs Time
+    ax2.set_xlabel('Time (s)')
+    ax2.set_ylabel('ADC Reading')
+    ax2.plot(df['Timestamp'], df['ADC'], color='r')
+    ax2.set_title('ADC Reading vs Time')
+    ax2.set_ylim(0, 1023)  # Set y-axis limits for ADC
+    ax2.grid(True)
     
-    # visual adjustments + title
-    fig.tight_layout()
-    plt.title('Intensity Level (%) vs. Time (s) and ADC Reading vs. Time (s)')
-    # displaying
+    # Adjust layout and add main title
+    plt.suptitle('Sensor Readings Over Time')
+    plt.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
     data_logging()
+    # data_plotting(pd.read_csv('Group4_Data.csv'))
+    
