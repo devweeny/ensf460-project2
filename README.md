@@ -4,6 +4,20 @@ Isabelle Gaudet/Group 4
 
 # How to use TransmissionLogger.py / Our program
 
+## Legend
+- [Intro](#intro)
+- [Requirements to interact with our program](#requirements-to-interact-with-our-program)
+  - [Hardware Setup](#hardware-setup)
+  - [Python Requirements/Libraries required](#python-requirementslibraries-required)
+- [Project Behavior](#project-behavior)
+  - [Functionalities of PBx (push buttons)](#functionalities-of-pbx-push-buttons)
+  - [Python Script Behavior](#python-script-behavior)
+- [How to Run the Python Script](#how-to-run-the-python-script)
+  - [Ensure Hardware Setup](#1-ensure-hardware-setup)
+  - [Run the Script](#2-run-the-script)
+  - [View the Outputs](#3-view-the-outputs)
+- [Example Outputs](#example-outputs)
+
 ## Intro
 
 App project 2 involves developing a microcontroller-based LED intensity control system. TransmissionLogger.py is a part of this project which is a Python data logging and visualization program. The LED brightness is adjustable by a potentiometer and responds to user input by push buttons. The Python script logs the intensity levels and ADC readings transmitted from the microcontroller over UART, saves them in a CSV file and generates a plot for analysis.
@@ -13,38 +27,17 @@ App project 2 involves developing a microcontroller-based LED intensity control 
 1. **Hardware Setup:**
 
    - Microcontroller with LED connected to pin 12.
-   - Push Buttons (PB1, PB2, PB3) - connected to ports RA2,RA4, and RB$, respectively.
+   - Push Buttons (PB1, PB2, PB3) - connected to ports RA2,RA4, and RB4, respectively.
    - Potentiometer for intensity adjustment.
    - UART interface for data transmission.
 
-2. **Python Dependencies:**
+2. **Python Requirements/Libraries required:**
 
    - Python 3.x
    - pyserial
    - pandas
    - matplotlib
-
-## How to Run the Python Script
-
-### 1. **Ensure Hardware Setup:**
-   - Connect the microcontroller to your PC using a UART interface.
-   - Verify the correct COM port (UART port) for your setup.
-
-### 2. **Run the Script:**
-   Execute the script using:
-   ```bash
-   python TransmissionLogger.py
-   ```
-   The script will do the following:
-   - Log data for 60 seconds.
-   - Save the data to a csv file titled `Group4_Data.csv`.
-   - Generate a graph with two plots:
-     - **Intensity Level (%) vs. Time (s)**
-     - **ADC Reading vs. Time (s)**
-
-### 3. **View the Outputs:**
-   - Check the downloaded csv file, `Group4_Data.csv` file for recorded intensity and ADC values.
-   - View the generated graph for visual analysis.
+   assuming that you know how to install..
 
 ## Project Behavior
 
@@ -72,13 +65,34 @@ App project 2 involves developing a microcontroller-based LED intensity control 
   - **Intensity vs. Time.**
   - **ADC Reading vs. Time.**
 
+## How to Run the Python Script
+
+### 1. **Ensure Hardware Setup:**
+   - Connect the microcontroller to your PC using a UART interface.
+   - Verify the correct COM port (UART port) for your setup.
+
+### 2. **Run the Script:**
+   Execute the script using:
+   ```bash
+   python TransmissionLogger.py
+   ```
+   The script will do the following:
+   - Log data for 60 seconds.
+   - Save the data to a csv file titled `Group4_Data.csv`.
+   - Generate a graph with two plots:
+     - **Intensity Level (%) vs. Time (s)**
+     - **ADC Reading vs. Time (s)**
+
+### 3. **View the Outputs:**
+   - Check the downloaded csv file, `Group4_Data.csv` file for recorded intensity and ADC values.
+   - View the generated graph for visual analysis.
+
 ## Example Outputs
 
 ### **CSV File (Sample)**:
 Timestamp,Intensity,ADC
 2024-11-23 12:00:01,75,512
 2024-11-23 12:00:02,80,520
-
 
 ### **Graph - the 2 graphs are subplots**:
 - **Plot 1:** Intensity Level (%) vs. Time (s).
