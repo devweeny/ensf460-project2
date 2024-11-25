@@ -11,6 +11,7 @@
 #include "clkChange.h"
 #include "UART2.h"
 
+// Initializes pin specific configuration for ADC conversions
 void init_ADC() {
     TRISAbits.TRISA3 = 1;
 
@@ -33,6 +34,7 @@ void init_ADC() {
     AD1CSSLbits.CSSL5 = 0;
 }
 
+// Reads the value of the potentiometer and returns the digital reading of it
 uint16_t do_ADC(void) {
     uint16_t ADCvalue;
 
@@ -46,6 +48,10 @@ uint16_t do_ADC(void) {
     return (ADCvalue);
 }
 
+
+// Sends ADC reading to display in both hexadecimal and percentage format
+// This function takes an ADC reading and displays it in two formats: Hexadecimal value, Percentage(0 - 100) 
+// if LED is ON, or 0 if LED is OFF
 void sendADCReading(uint16_t reading, uint8_t LED_ON) {
     Disp2Hex(reading);
     Disp2String(",");

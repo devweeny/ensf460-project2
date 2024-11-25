@@ -73,12 +73,6 @@ int main(void) {
     IOinit();
     InitUART2();
     init_ADC();
-    // mode = OFF;
-    // timeOld = tmr3_event;
-    // isLED = 0;
-    // LED_BIT = 0;
-    // T2CONbits.TON = 0;
-    // T3CONbits.TON = 0;
 
     while (1) {
         // IOcheck will return 1 if a state transition occurs, 0 otherwise
@@ -94,15 +88,13 @@ int main(void) {
 void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void){
     IFS0bits.T2IF = 0;
     tmr2_event = 1;
-    // T2CONbits.TON = 0; // disable timer
 
 }
 
 void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
-    //Don't forget to clear the timer 3 interrupt flag!
     IFS0bits.T3IF = 0;
     
-    TMR3 = 0; // reset timer
+    TMR3 = 0; 
     tmr3_event += 1;
 }
 
@@ -113,6 +105,10 @@ uint8_t button_state = 0;
 
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
     IFS1bits.CNIF = 0;
+    // If PBx is pressed set the state to 1, and if it isn't pressed but the state is set,
+    // then the button has been released and the state should be cleared, and PBx_click should be set
+    // to 1 to indicate that the button has been clicked
+
     if (PB1 == 0 && (button_state & PB1_state) == 0) {
         button_state |= PB1_state;
     } else if (PB1 == 1 && (button_state & PB1_state) != 0) {

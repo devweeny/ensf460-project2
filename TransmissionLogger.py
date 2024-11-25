@@ -31,11 +31,8 @@ def data_logging():
         # if data read..
         if hex:
             adc = int(hex, 16)  # convert hex to int
-            # intensity = adc/1023*100
 
-            
-            # timestamp=current date/time
-            # timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # records the time in seconds since the start, first datapoint will be 0.00s
             timestamp = (time.time()*1000.0-start_millisecond)/1000.0
             # intensity,adc value=split data
             
@@ -43,7 +40,7 @@ def data_logging():
             data.append([timestamp,intensity,adc])
             
             # print data to console
-            print(f'Time: {timestamp}, Intensity: {intensity}, ADC: {adc}')
+            print(f'Time: {timestamp:.2f}, Intensity: {intensity}, ADC: {adc}')
     ser.close()
         
     # creating dataframe 

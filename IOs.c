@@ -65,7 +65,7 @@ void handlePWM() {
   uint16_t reading = do_ADC();
   float intensity = (float)do_ADC() / 1023.0;
 
-  // PR2 = 500 gives a period of 1ms
+  // PR2 = 5000 gives a period of ~10ms
   if (ledPulse) {
     PR2 = (uint16_t)((5000 * (1.0 - intensity)) + 1);
   }
@@ -80,21 +80,23 @@ void handlePWM() {
   TMR2 = 0;
   T2CONbits.TON = 1;
 }
-
 int IOcheck() {
   switch (mode) {
   case OFF:
+    // LED is completely off, waiting for button press to change state
     if (PB1_click) {
+      // Transition to ON state and clear PB1_click 
       timeOld = tmr3_event;
       PB1_click = 0;
-      PB3_click = 0;
+      PB3_click = 0; // Clear PB3_click in case it was set but not processed as it should do nothing in this state
       mode = ON;
       isLED = 1;
       return 1;
     }
     else if (PB2_click) {
+      // Transition to OFF state and clear PB2_click
       PB2_click = 0;
-      PB3_click = 0;
+      PB3_click = 0; // Clear PB3_click in case it was set but not processed as it should do nothing in this state
       mode = OFF_BLINK;
       return 1;
     }
@@ -105,21 +107,25 @@ int IOcheck() {
     T3CONbits.TON = 0;
     break;
   case OFF_BLINK:
+    // LED blinks at fixed rate while system is off
     if (PB1_click) {
+      // Transition to ON state and clear PB1_click
       timeOld = tmr3_event;
       PB1_click = 0;
-      PB3_click = 0;
+      PB3_click = 0; // Clear PB3_click in case it was set but not processed as it should do nothing in this state
       mode = ON;
       isLED = 1;
       return 1;
     }
     else if (PB2_click) {
+      // Transition to OFF state and clear PB2_click
       PB2_click = 0;
-      PB3_click = 0;
+      PB3_click = 0; // Clear PB3_click in case it was set but not processed as it should do nothing in this state
       mode = OFF;
       return 1;
     }
     if (timerEvent && tmr3_event % 5 == 0) {
+      // Toggle LED every 5 timer events (~500ms)
       tmr3_event = 0;
       isLED = !isLED;
     }
@@ -129,18 +135,22 @@ int IOcheck() {
     T3CONbits.TON = 1;
     break;
   case ON:
+    // LED is on with PWM intensity based on ADC reading
     if (PB1_click) {
+      // Transition to OFF state and clear PB1_click
       PB1_click = 0;
       timeOld = tmr3_event;
       mode = OFF;
       return 1;
     }
     else if (PB2_click) {
+      // Transition to ON_BLINK state and clear PB2_click
       PB2_click = 0;
       mode = ON_BLINK;
       return 1;
     }
     else if (PB3_click) {
+      // Transition to ON_TRANSMIT state and clear PB3_click
       PB3_click = 0;
       mode = ON_TRANSMIT;
       return 1;
@@ -149,27 +159,33 @@ int IOcheck() {
     T3CONbits.TON = 0;
 
     if (tmr2_event) {
+      // Every ~10ms the pwm should be called 
       handlePWM();
     }
     break;
   case ON_BLINK:
+    // LED blinks with PWM intensity while system is on
     if (PB1_click) {
+      // Transition to OFF state and clear PB1_click
       PB1_click = 0;
       timeOld = tmr3_event;
       mode = OFF;
       return 1;
     }
     else if (PB2_click) {
+      // Transition to ON state and clear PB2_click
       PB2_click = 0;
       mode = ON;
       return 1;
     }
     else if (PB3_click) {
+      // Transition to ON_BLINK_TRANSMIT state and clear PB3_click
       PB3_click = 0;
       mode = ON_BLINK_TRANSMIT;
       return 1;
     }
     if (timerEvent && tmr3_event % 5 == 0) {
+      // Toggle LED every 5 timer events (~500ms)
       tmr3_event = 0;
       isLED = !isLED;
     }
@@ -179,28 +195,34 @@ int IOcheck() {
     T3CONbits.TON = 1;
 
     if (tmr2_event && isLED) {
+      // Every ~10ms the pwm should be called 
       handlePWM();
     }
     LED_BIT = LED_BIT && isLED;
     break;
   case ON_TRANSMIT:
+    // Transmits ADC readings while LED is on with PWM
     if (PB1_click) {
+      // Transition to OFF state and clear PB1_click
       PB1_click = 0;
       timeOld = tmr3_event;
       mode = OFF;
       return 1;
     }
     else if (PB2_click) {
+      // Transition to ON_BLINK_TRANSMIT state and clear PB2_click
       PB2_click = 0;
       mode = ON_BLINK_TRANSMIT;
       return 1;
     }
     else if (PB3_click) {
+      // Transition to ONT state and clear PB3_click
       PB3_click = 0;
       mode = ON;
       return 1;
     }
     if (timerEvent && tmr3_event % 3 == 0) {
+      // Every ~300ms send an ADC and Intensity reading via UART
       sendADCReading(do_ADC(), isLED);
     }
     isLED = 1;
@@ -210,32 +232,39 @@ int IOcheck() {
     T3CONbits.TON = 1;
 
     if (tmr2_event) {
+      // Every ~10ms the pwm should be called 
       handlePWM();
     }
     break;
   case ON_BLINK_TRANSMIT:
+    // Transmits ADC readings while LED blinks with PWM
     if (PB1_click) {
+      // Transition to OFF state and clear PB1_click
       PB1_click = 0;
       timeOld = tmr3_event;
       mode = OFF;
       return 1;
     }
     else if (PB2_click) {
+      // Transition to ON_TRANSMIT state and clear PB2_click
       PB2_click = 0;
       mode = ON_TRANSMIT;
       return 1;
     }
     else if (PB3_click) {
+      // Transition to ON_BLINK state and clear PB3_click
       PB3_click = 0;
       mode = ON_BLINK;
       return 1;
     }
     if (timerEvent) {
-      if (timerEvent && tmr3_event % 5 == 0) {
-        tmr3_event = 0;
+      if (tmr3_event % 5 == 0) {
+        // Toggle LED every 5 timer events (~500ms)
         isLED = !isLED;
+        tmr3_event = 0;
       }
       if (tmr3_event % 3 == 0) {
+        // Every ~300ms send an ADC and Intensity reading via UART
         sendADCReading(do_ADC(), isLED);
       }
     }
@@ -245,6 +274,7 @@ int IOcheck() {
     T3CONbits.TON = 1;
 
     if (tmr2_event && isLED) {
+      // Every ~10ms the pwm should be called
       handlePWM();
     }
     LED_BIT = LED_BIT && isLED;
