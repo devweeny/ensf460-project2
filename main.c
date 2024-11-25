@@ -54,7 +54,7 @@
 #include "clkChange.h"
 #include "UART2.h"
 #include "ADC.h"
-#include "light_control.h"
+#include "IOs.h"
 
 
 // global flags
@@ -64,16 +64,28 @@ uint8_t PB3_click = 0;
 
 uint8_t tmr2_event = 0;
 uint8_t tmr3_event = 0;
-uint8_t mode = 0;
+state_t mode = OFF;
 uint8_t timeOld = 0;
+uint8_t isLED = 0;
+uint8_t ledPulse = 0;
 
 int main(void) {
     IOinit();
     InitUART2();
     init_ADC();
+    // mode = OFF;
+    // timeOld = tmr3_event;
+    // isLED = 0;
+    // LED_BIT = 0;
+    // T2CONbits.TON = 0;
+    // T3CONbits.TON = 0;
 
-    while(1) {        
-        IOcheck();
+    while (1) {
+        // IOcheck will return 1 if a state transition occurs, 0 otherwise
+        // This allows IOcheck to once again be called in the while loop
+        if (IOcheck())
+            continue;
+        Idle();
     }
     return 0;
 }
